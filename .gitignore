@@ -1,0 +1,13 @@
+# Entorno virtual
+.venv/
+
+# Python
+__pycache__/
+*.pyc
+
+# macOS
+.DS_Store
+
+# Salida generada (se reconstruye con app/generate_passports.py
+# y app/image_generator.py; scenarios/passports.json es la fuente de verdad)
+output/

@@ -1,0 +1,9 @@
+# Blueprint de Render para desplegar Passport Test Data Generator.
+# https://render.com/docs/blueprint-spec
+services:
+  - type: web
+    name: passport-test-data
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
