@@ -120,18 +120,6 @@
         "expiration_date": "331120"
     },
     {
-        "id": "PER-001",
-        "country": "Peru",
-        "issuing_country": "PER",
-        "surname": "QUISPE",
-        "given_names": "DIEGO ANDRES",
-        "passport_number": "P13579246",
-        "nationality": "PER",
-        "birth_date": "900204",
-        "sex": "M",
-        "expiration_date": "290830"
-    },
-    {
         "id": "PER-004",
         "country": "Peru",
         "issuing_country": "PER",
