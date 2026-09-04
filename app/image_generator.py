@@ -95,12 +95,12 @@ BUNDLED_FONTS_FOLDER = APP_FOLDER / "fonts"
 # Courier New es monoespaciada. Esto es importante para la MRZ.
 MONO_FONT_CANDIDATES = [
     Path("/System/Library/Fonts/Supplemental/Courier New.ttf"),
-    BUNDLED_FONTS_FOLDER / "DejaVuSansMono.ttf",
+    BUNDLED_FONTS_FOLDER / "LiberationMono-Regular.ttf",
 ]
 
 MONO_BOLD_FONT_CANDIDATES = [
     Path("/System/Library/Fonts/Supplemental/Courier New Bold.ttf"),
-    BUNDLED_FONTS_FOLDER / "DejaVuSansMono-Bold.ttf",
+    BUNDLED_FONTS_FOLDER / "LiberationMono-Bold.ttf",
 ]
 
 # Arial sera utilizada para:
@@ -110,7 +110,7 @@ MONO_BOLD_FONT_CANDIDATES = [
 # - valores visibles
 NORMAL_FONT_CANDIDATES = [
     Path("/System/Library/Fonts/Supplemental/Arial.ttf"),
-    BUNDLED_FONTS_FOLDER / "DejaVuSans.ttf",
+    BUNDLED_FONTS_FOLDER / "LiberationSans-Regular.ttf",
 ]
 
 
