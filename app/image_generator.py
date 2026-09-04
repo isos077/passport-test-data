@@ -163,7 +163,27 @@ def load_font(font_candidates, size):
 # 6. CONSTRUIR IMAGEN EN MEMORIA
 # ------------------------------------------------------------
 
-def build_passport_image(passport):
+def build_passport_image(passport, *, background_margin=0, td3_ratio=False):
+    """
+    Construye la imagen del pasaporte sintetico.
+
+    Parametros nuevos (para diagnosticar el problema de deteccion en
+    iOS: ahi no se detecta ni el documento ni la MRZ, aunque en Android
+    si funciona):
+
+    background_margin -- pixeles de fondo gris alrededor del documento,
+        simulando una foto real del documento sobre una superficie.
+        0 (default) = comportamiento identico al original (sin margen),
+        que es el que ya esta validado en Android.
+
+    td3_ratio -- si es True, ajusta el alto del lienzo para que la
+        proporcion ancho:alto coincida con una pagina de datos TD3 real
+        (125mm x 88mm). False (default) = mantiene el alto original
+        (1000px), igual que el comportamiento ya validado en Android.
+
+    Con ambos parametros en su valor default, el resultado es
+    exactamente el mismo que antes de este cambio.
+    """
 
     # --------------------------------------------------------
     # DIMENSIONES
@@ -173,7 +193,23 @@ def build_passport_image(passport):
     width = 1600
 
     # Alto.
-    height = 1000
+    #
+    # Por default usamos 1000 (el ya validado en Android). Si
+    # td3_ratio=True, lo recalculamos para que coincida con la
+    # proporcion real de una pagina de datos TD3 (125mm x 88mm).
+    if td3_ratio:
+        height = round(width * 88 / 125)
+    else:
+        height = 1000
+
+    # Factor de escala vertical: todas las coordenadas Y de este
+    # documento fueron afinadas para height=1000. Si height cambia
+    # (td3_ratio=True), escalamos proporcionalmente para que el
+    # layout se mantenga igual de proporcionado.
+    scale = height / 1000
+
+    def y_at(value):
+        return round(value * scale)
 
 
     # --------------------------------------------------------
@@ -240,7 +276,7 @@ def build_passport_image(passport):
     draw.rectangle(
         (
             30,
-            30,
+            y_at(30),
             width - 30,
             height - 30
         ),
@@ -258,7 +294,7 @@ def build_passport_image(passport):
     # --------------------------------------------------------
 
     draw.text(
-        (80, 60),
+        (80, y_at(60)),
         "SYNTHETIC TEST DOCUMENT",
         fill="black",
         font=title_font
@@ -270,7 +306,7 @@ def build_passport_image(passport):
     # --------------------------------------------------------
 
     draw.text(
-        (80, 120),
+        (80, y_at(120)),
         "NOT A REAL PASSPORT",
         fill="black",
         font=label_font
@@ -282,7 +318,7 @@ def build_passport_image(passport):
     # --------------------------------------------------------
 
     draw.text(
-        (1150, 70),
+        (1150, y_at(70)),
         f"Test ID: {passport['id']}",
         fill="black",
         font=label_font
@@ -294,7 +330,7 @@ def build_passport_image(passport):
     # --------------------------------------------------------
 
     draw.text(
-        (1150, 115),
+        (1150, y_at(115)),
         f"Country: {passport['country']}",
         fill="black",
         font=label_font
@@ -309,13 +345,13 @@ def build_passport_image(passport):
     photo_left = 90
 
     # Posicion superior.
-    photo_top = 230
+    photo_top = y_at(230)
 
     # Posicion derecha.
     photo_right = 450
 
     # Posicion inferior.
-    photo_bottom = 650
+    photo_bottom = y_at(650)
 
 
     # Dibujamos el rectangulo
@@ -334,7 +370,7 @@ def build_passport_image(passport):
 
     # Texto dentro del placeholder.
     draw.text(
-        (170, 420),
+        (170, y_at(420)),
         "TEST PHOTO",
         fill="black",
         font=label_font
@@ -349,10 +385,10 @@ def build_passport_image(passport):
     x = 530
 
     # Posicion vertical inicial.
-    y = 230
+    y = y_at(230)
 
     # Separacion vertical.
-    spacing = 105
+    spacing = y_at(105)
 
 
     # --------------------------------------------------------
@@ -512,7 +548,7 @@ def build_passport_image(passport):
     # La MRZ va en la parte INFERIOR de la imagen.
     #
     # Esta es la configuracion que fue reconocida
-    # correctamente por el scanner.
+    # correctamente por el scanner (en Android).
 
 
     # --------------------------------------------------------
@@ -522,9 +558,9 @@ def build_passport_image(passport):
     draw.line(
         (
             80,
-            750,
+            y_at(750),
             1520,
-            750
+            y_at(750)
         ),
         fill="black",
         width=3
@@ -536,7 +572,7 @@ def build_passport_image(passport):
     # --------------------------------------------------------
 
     draw.text(
-        (90, 775),
+        (90, y_at(775)),
         "MACHINE READABLE ZONE",
         fill="black",
         font=label_font
@@ -548,7 +584,7 @@ def build_passport_image(passport):
     # --------------------------------------------------------
 
     draw.text(
-        (90, 830),
+        (90, y_at(830)),
         passport["mrz"]["line1"],
         fill="black",
         font=mrz_font
@@ -560,11 +596,33 @@ def build_passport_image(passport):
     # --------------------------------------------------------
 
     draw.text(
-        (90, 885),
+        (90, y_at(885)),
         passport["mrz"]["line2"],
         fill="black",
         font=mrz_font
     )
+
+
+    # ========================================================
+    # FONDO / MARGEN (simula una foto real del documento)
+    # ========================================================
+
+    # Si background_margin=0 (default), no se toca nada: el
+    # resultado es identico al comportamiento ya validado.
+    if background_margin:
+
+        # Gris neutro, simulando una superficie/mesa detras del
+        # documento -- le da al detector de bordes de iOS algo
+        # con que distinguir "documento" de "fondo".
+        canvas = Image.new(
+            "RGB",
+            (width + 2 * background_margin, height + 2 * background_margin),
+            (190, 190, 190)
+        )
+
+        canvas.paste(image, (background_margin, background_margin))
+
+        image = canvas
 
 
     # ========================================================
