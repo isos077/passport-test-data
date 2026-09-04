@@ -1,9 +1,15 @@
 # Blueprint de Render para desplegar Passport Test Data Generator.
 # https://render.com/docs/blueprint-spec
+#
+# runtime: docker (en vez de runtime: python) porque necesitamos
+# instalar, a nivel de sistema operativo, las fuentes reales de
+# Microsoft (Arial, Courier New) via ttf-mscorefonts-installer.
+# Ver Dockerfile para el detalle tecnico y la justificacion de
+# licencia.
 services:
   - type: web
     name: passport-test-data
-    runtime: python
+    runtime: docker
     plan: free
-    buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    dockerfilePath: ./Dockerfile
+    dockerContext: .

@@ -93,13 +93,26 @@ BUNDLED_FONTS_FOLDER = APP_FOLDER / "fonts"
 # empaquetada equivalente.
 #
 # Courier New es monoespaciada. Esto es importante para la MRZ.
+#
+# Orden de candidatos para cada rol:
+# 1) macOS: fuente real, para desarrollo local en Mac.
+# 2) Linux/Render: fuente REAL de Microsoft instalada durante el
+#    build de Docker via ttf-mscorefonts-installer (ver Dockerfile).
+#    Es la misma Arial/Courier New, con licencia correcta (EULA de
+#    Microsoft "Core Fonts for the Web"), no una alternativa parecida.
+# 3) Respaldo de ultimo recurso (Liberation Sans/Mono), solo si por
+#    algun motivo la instalacion de mscorefonts fallo en el build.
+MSCOREFONTS_FOLDER = Path("/usr/share/fonts/truetype/msttcorefonts")
+
 MONO_FONT_CANDIDATES = [
     Path("/System/Library/Fonts/Supplemental/Courier New.ttf"),
+    MSCOREFONTS_FOLDER / "Courier_New.ttf",
     BUNDLED_FONTS_FOLDER / "LiberationMono-Regular.ttf",
 ]
 
 MONO_BOLD_FONT_CANDIDATES = [
     Path("/System/Library/Fonts/Supplemental/Courier New Bold.ttf"),
+    MSCOREFONTS_FOLDER / "Courier_New_Bold.ttf",
     BUNDLED_FONTS_FOLDER / "LiberationMono-Bold.ttf",
 ]
 
@@ -110,6 +123,7 @@ MONO_BOLD_FONT_CANDIDATES = [
 # - valores visibles
 NORMAL_FONT_CANDIDATES = [
     Path("/System/Library/Fonts/Supplemental/Arial.ttf"),
+    MSCOREFONTS_FOLDER / "Arial.ttf",
     BUNDLED_FONTS_FOLDER / "LiberationSans-Regular.ttf",
 ]
 
@@ -157,6 +171,43 @@ def load_font(font_candidates, size):
     # Si ninguna existe, utilizamos
     # la fuente por defecto de Pillow.
     return ImageFont.load_default()
+
+
+# ------------------------------------------------------------
+# 5b. DIAGNOSTICO: QUE FUENTE SE USO REALMENTE
+# ------------------------------------------------------------
+
+# Se ejecuta una sola vez, al iniciar el proceso (al importar este
+# modulo), e imprime en los logs cual archivo de fuente se resolvio
+# para cada rol. Util para confirmar en los logs de Render si se
+# esta usando la fuente real de Microsoft (mscorefonts) o si cayo
+# al respaldo Liberation por algun problema durante el build.
+def _log_resolved_fonts():
+
+    roles = {
+        "Arial/Normal (titulos, labels, valores)": NORMAL_FONT_CANDIDATES,
+        "Courier New (MRZ)": MONO_FONT_CANDIDATES,
+        "Courier New Bold": MONO_BOLD_FONT_CANDIDATES,
+    }
+
+    print("[fonts] Fuentes resueltas al iniciar el proceso:")
+
+    for role, candidates in roles.items():
+
+        resolved = None
+
+        for font_path in candidates:
+            if font_path.exists():
+                resolved = font_path
+                break
+
+        if resolved:
+            print(f"[fonts]   {role}: {resolved}")
+        else:
+            print(f"[fonts]   {role}: NINGUNA encontrada, usando default de Pillow")
+
+
+_log_resolved_fonts()
 
 
 # ------------------------------------------------------------
