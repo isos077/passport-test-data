@@ -46,6 +46,14 @@ from app.image_generator import build_passport_image
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 
+# Margen gris alrededor del documento (en pixeles), simulando una
+# foto real de un pasaporte sobre una superficie. Ayuda al detector
+# de bordes de iOS a distinguir "documento" de "fondo" -- sin esto,
+# la imagen es un rectangulo blanco pegado al borde de la pantalla,
+# sin un fondo con el que contrastar. Ver build_passport_image() en
+# app/image_generator.py (parametro background_margin).
+BACKGROUND_MARGIN_PX = 120
+
 # scenarios/passports.json sigue siendo la fuente de verdad
 # para los escenarios predefinidos.
 PASSPORTS_FILE = PROJECT_ROOT / "scenarios" / "passports.json"
@@ -332,7 +340,7 @@ def generate(
     # GENERAR MRZ + VALIDAR + IMAGEN
     # --------------------------------------------------------
     record = build_passport_record(data)
-    image = build_passport_image(record)
+    image = build_passport_image(record, background_margin=BACKGROUND_MARGIN_PX)
 
     # Generamos el PNG en memoria (sin tocar disco).
     buffer = io.BytesIO()
